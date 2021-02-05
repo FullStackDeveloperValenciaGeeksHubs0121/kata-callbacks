@@ -1,6 +1,19 @@
 class Application {
 
 
+
+    
+    _initialState = {
+        num1: 0,
+        num2: null,
+        operation: null
+    }
+
+    _state = null;
+
+
+
+
     settings = {
         buttons: [
             {name: 1, action: this.setNumerAction},
@@ -10,8 +23,8 @@ class Application {
             {name: 5, action: this.setNumerAction},
             {name: 6, action: this.setNumerAction},
             {name: '+', action: this.setOperationAction},
-            {name: 'C', action: this.resetAction},
-            {name: 'AC', action: this.resetAction}
+            {name: 'C', action: this.resetAction.bind(this)},
+            {name: 'AC', action: () => this.resetAction()}
 
 
         ]
@@ -27,7 +40,12 @@ class Application {
     }
 
     init = (element) => {
+        this.reset();
         this._element = document.getElementById(element);
+    }
+
+    reset() {
+        this._state = this._initialState;
     }
 
     render() {
@@ -37,7 +55,9 @@ class Application {
 
 
     resetAction(resetType, e) {
-        console.log(resetType, e);
+        if(resetType === 'C') {
+            this.reset();
+        }
     }
 
     setNumerAction(number, e) {
@@ -67,7 +87,7 @@ class Button {
 
     init() {
         this._element = this.render();
-        this._element.addEventListener('click', (e) =>this.action(this.name,e))//   );
+        this._element.addEventListener('click', (e) =>this.action(this.name,e))
     }
 
     get() {
