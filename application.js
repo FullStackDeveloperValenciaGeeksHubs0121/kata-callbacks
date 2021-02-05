@@ -23,7 +23,7 @@ class Application {
             {name: 5, action: this.setNumerAction},
             {name: 6, action: this.setNumerAction},
             {name: '+', action: this.setOperationAction},
-            {name: 'C', action: this.resetAction.bind(this)},
+            {name: 'C', action: () => this.resetAction()},
             {name: 'AC', action: () => this.resetAction()}
 
 
