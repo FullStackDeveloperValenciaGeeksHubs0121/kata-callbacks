@@ -1,10 +1,12 @@
 class State {
     state = [];
-    onChange = () => {};
+    onChange;
 
-    constructor(initial, onChange) {
-        this.set(initial);
+    constructor(initial, onChange = ()=>{}) { 
         this.onChange = onChange;
+
+        this.set(initial);        
+
     }
 
     set(newState){
@@ -37,6 +39,7 @@ class Calculator  {
     domElement;
     name;
     buttons;
+    screen;
     state;
 
 
@@ -56,26 +59,35 @@ class Calculator  {
             {name: '=', action: () => this.setOperationAction('=')},
             {name: '+', action: () => this.setOperationAction('+')},
             {name: '-', action: () => this.setOperationAction('-')},
+            {name: '^', action: () => this.setOperationAction('^')},
+
+            {name: 'SIN', action: () => {
+                this.setOperationAction('SIN');
+                this.setOperationAction('=');
+            }},
+
             // {name: '/', action: (o) => this.setOperationAction(o)},
             // {name: '*', action: (o) => this.setOperationAction(o)},
             // {name: '^', action: (o) => this.setOperationAction(o)},
-            // {name: '^2', action: (o) => {this.setOperationAction('^'),this.setNumberAction(2),this.setOperationAction('=')}},
+            {name: '^2', action: () => {
+                this.setOperationAction('^'),
+                this.setNumberAction(2),
+                this.setOperationAction('=')}
+            },
 
-            // {name: 'C', action: (r) => this.resetAction(r)},
-            // {name: 'AC', action: (r) => this.resetAction(r)}
+            {name: 'C', action: () => this.resetAction('C')},
+            {name: 'AC', action: () => this.resetAction('AC')}
         ]
     }
 
 
     constructor(elementId) {
         this.name = elementId;
-        this.domElement = document.getElementById(elementId);
-        this.domElement.setAttribute('class','calculator');
         this.init();
-
     }
 
     init() {
+        this.render();
 
         let initialState ={
                 num1: 0,
@@ -83,19 +95,30 @@ class Calculator  {
                 operation: null
             };
 
-        let stateCallbackOnChange = (a, lenght, allSates) => {
-            console.log(a);
-        
-            console.log('el estado ha cambiado', this.name);
+        let stateCallbackOnChange = (state) => {
+           this.handleScreen(state);
         }
 
-
+        this.buildScreen();
         this.buildButtons();
         this.state = new State(initialState,stateCallbackOnChange);
     }
 
-    render() {
 
+    handleScreen(state) {
+
+        let {num1, num2, operation} = state;
+        if(num2) {
+            this.screen.set(num2);
+        } else {
+            this.screen.set(num1);
+        }
+        
+    }
+
+    render() {
+        this.domElement = document.getElementById(this.name);
+        this.domElement.setAttribute('class','calculator');
     }
 
 
@@ -107,6 +130,11 @@ class Calculator  {
 
         this.buttons.map((button) => button.appendTo(this.domElement));
             
+    }
+
+    buildScreen(){
+        this.screen = new Screen();
+        this.screen.appendTo(this.domElement);
     }
 
 
@@ -141,6 +169,12 @@ class Calculator  {
         this.state.set({num1,num2,operation});
     }
 
+    resetAction(resetType) {
+        if(resetType === 'C') {
+            this.state.reset();
+        }
+    }
+
 
     calcule(){
         let {num1,num2,operation} = this.state.get();
@@ -151,6 +185,7 @@ class Calculator  {
             case '/': return num1*1 / num2*1;
             case '*': return num1*1 * num2*1;
             case '^': return Math.pow(num1*1,num2*1);
+            case 'SIN': return Math.sin(num1*1);
 
 
             break;
@@ -159,6 +194,45 @@ class Calculator  {
 
 }
 
+
+class Screen {
+    
+    prompt;
+    domElement;
+    onPrompt;
+
+    constructor(onPrompt = () => {}) {
+        this.onPrompt = onPrompt;
+        this.init();
+    }
+
+    init() {
+        this.domElement = this.render();
+    }
+
+
+
+    render() {
+        let element = document.createElement('div');
+        element.setAttribute('class','screen');
+        return element;
+    }
+
+
+    set(value) {
+        this.prompt = value;
+        this.domElement.innerHTML = this.prompt;
+        this.onPrompt(this.prompt);
+   }
+   
+
+
+    appendTo(domElement) {
+        domElement.appendChild(this.domElement);
+    }
+
+
+}
 
 class Button {
 
@@ -189,7 +263,7 @@ class Button {
 
 
     render() {
-        let element = document.createElement('button');
+        let element =  document.createElement('div').appendTo(document.createElement('button'));
         element.setAttribute('class','button');
         element.innerHTML = this.name;
         return  element;
